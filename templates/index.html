@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ content.title }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f4f4;
+      color: #222;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; }
+    header p  { margin-top: .5rem; color: #aaa; font-size: 1rem; }
+
+    .cf-badge {
+      background: #0d7377;
+      color: #fff;
+      text-align: center;
+      padding: .5rem;
+      font-size: .85rem;
+    }
+    .cf-badge span { opacity: .7; }
+
+    main {
+      max-width: 860px;
+      margin: 2.5rem auto;
+      padding: 0 1.25rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    .card img {
+      width: 100%;
+      max-height: 380px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card video {
+      width: 100%;
+      display: block;
+      background: #000;
+    }
+
+    .media-placeholder {
+      height: 180px;
+      background: #e8e8e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: .9rem;
+    }
+
+    .card-text {
+      padding: 1.4rem 1.6rem 1.8rem;
+    }
+    .card-text h2 {
+      font-size: 1.35rem;
+      margin-bottom: .6rem;
+      color: #1a1a2e;
+    }
+    .card-text p {
+      line-height: 1.7;
+      color: #555;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: .8rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>{{ content.title }}</h1>
+    <p>{{ content.intro }}</p>
+  </header>
+
+  {% if cloudfront_url %}
+  <div class="cf-badge">
+    ☁️ Media served from CloudFront &nbsp;·&nbsp;
+    <span>{{ cloudfront_url }}</span>
+  </div>
+  {% else %}
+  <div class="cf-badge" style="background:#b94a48;">
+    ⚠️ CLOUDFRONT_URL not set — check ASM or environment variables
+  </div>
+  {% endif %}
+
+  <main>
+    {% for section in content.sections %}
+    <div class="card">
+
+      {% if section.image_url %}
+        <img src="{{ section.image_url }}" alt="{{ section.heading }}" loading="lazy" />
+      {% endif %}
+
+      {% if section.video_url %}
+        <!-- 
+          preload="metadata" enables chunked loading via HTTP Range requests.
+          The browser will fetch video in chunks instead of downloading the whole file.
+        -->
+        <video controls preload="metadata" playsinline>
+          <source src="{{ section.video_url }}" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      {% endif %}
+
+      {% if not section.image_url and not section.video_url %}
+        <div class="media-placeholder">No media configured</div>
+      {% endif %}
+
+      <div class="card-text">
+        <h2>{{ section.heading }}</h2>
+        <p>{{ section.body }}</p>
+      </div>
+
+    </div>
+    {% endfor %}
+  </main>
+
+  <footer>Built with Flask · Media via AWS CloudFront</footer>
+
+</body>
+</html>

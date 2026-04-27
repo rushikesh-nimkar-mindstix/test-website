@@ -1,0 +1,24 @@
+{
+  "title": "My Media Page",
+  "intro": "A simple page with images, text, and videos served from CloudFront.",
+  "sections": [
+    {
+      "heading": "Mountains",
+      "body": "Crisp air, endless views, and the quiet you can only find above the treeline.",
+      "image": "images/mountain.jpeg",
+      "video": null
+    },
+    {
+      "heading": "Ocean",
+      "body": "Salt water, rhythm of the waves, and a horizon that goes on forever.",
+      "image": null,
+      "video": "videos/ocean.mp4"
+    },
+    {
+      "heading": "Car Adventures",
+      "body": "The thrill of the open road and the hum of the engine.",
+      "image": null,
+      "video": "videos/car.mp4"
+    }
+  ]
+}
