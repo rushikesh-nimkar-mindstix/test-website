@@ -5,134 +5,249 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{{ content.title }}</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0e0e0e;
+      --surface:  #161616;
+      --border:   #2a2a2a;
+      --text:     #e8e8e8;
+      --muted:    #888;
+      --accent:   #d4f5a0;
+      --radius:   12px;
+    }
+
+    html { scroll-behavior: smooth; }
 
     body {
+      background: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f4f4f4;
-      color: #222;
+      line-height: 1.6;
     }
 
-    header {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-    }
-    header h1 { font-size: 2rem; font-weight: 700; }
-    header p  { margin-top: .5rem; color: #aaa; font-size: 1rem; }
-
-    .cf-badge {
-      background: #0d7377;
-      color: #fff;
-      text-align: center;
-      padding: .5rem;
-      font-size: .85rem;
-    }
-    .cf-badge span { opacity: .7; }
-
-    main {
-      max-width: 860px;
-      margin: 2.5rem auto;
-      padding: 0 1.25rem 4rem;
+    /* ── HERO ────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: 2.5rem;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1.5rem;
+      position: relative;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,245,160,.08) 0%, transparent 70%),
+        var(--bg);
     }
 
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    .hero-eyebrow {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 40%, #888);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-tagline {
+      margin-top: 1.2rem;
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 420px;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .4rem;
+      color: var(--muted);
+      font-size: .75rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      animation: fadeUp 1s ease .8s both;
+    }
+    .scroll-hint svg { opacity: .4; animation: bounce 1.6s ease infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+    /* ── CF BADGE ──────────────────────────────────────────────── */
+    .cf-strip {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .55rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    .cf-strip .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .cf-strip.error .dot { background: #e05252; }
+    .cf-strip code {
+      color: #aaa;
+      font-size: .75rem;
+    }
+
+    /* ── SECTIONS ──────────────────────────────────────────────── */
+    .sections {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 5rem 1.5rem 8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6rem;
+    }
+
+    .section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .section:nth-child(even) { direction: rtl; }
+    .section:nth-child(even) > * { direction: ltr; }
+
+    /* ── MEDIA BLOCK ──────────────────────────────────────────── */
+    .media-block {
+      border-radius: var(--radius);
       overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      aspect-ratio: 16/10;
+      position: relative;
     }
 
-    .card img {
+    .media-block img,
+    .media-block video {
       width: 100%;
-      max-height: 380px;
+      height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    .card video {
-      width: 100%;
-      display: block;
-      background: #000;
+    .media-block video { background: #000; }
+
+    /* ── TEXT BLOCK ───────────────────────────────────────────── */
+    .text-block { display: flex; flex-direction: column; gap: 1rem; }
+
+    .section-num {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--accent);
     }
 
-    .media-placeholder {
-      height: 180px;
-      background: #e8e8e8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #999;
-      font-size: .9rem;
+    .text-block h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.2;
     }
 
-    .card-text {
-      padding: 1.4rem 1.6rem 1.8rem;
-    }
-    .card-text h2 {
-      font-size: 1.35rem;
-      margin-bottom: .6rem;
-      color: #1a1a2e;
-    }
-    .card-text p {
-      line-height: 1.7;
-      color: #555;
+    .text-block p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.75;
+      max-width: 38ch;
     }
 
+    /* ── DIVIDER ──────────────────────────────────────────────── */
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+    }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
     footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
       text-align: center;
-      padding: 1.5rem;
+      color: var(--muted);
       font-size: .8rem;
-      color: #999;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .section { grid-template-columns: 1fr; direction: ltr; gap: 1.5rem; }
+      .section:nth-child(even) { direction: ltr; }
+      .sections { gap: 4rem; padding-top: 3rem; }
     }
   </style>
 </head>
 <body>
 
-  <header>
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-eyebrow">A visual journey</p>
     <h1>{{ content.title }}</h1>
-    <p>{{ content.intro }}</p>
-  </header>
+    <p class="hero-tagline">{{ content.tagline }}</p>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
 
+  <!-- CloudFront badge -->
   {% if cloudfront_url %}
-  <div class="cf-badge">
-    ☁️ Media served from CloudFront &nbsp;·&nbsp;
-    <span>{{ cloudfront_url }}</span>
+  <div class="cf-strip">
+    <span class="dot"></span>
+    Media served via CloudFront &nbsp;·&nbsp;
+    <code>{{ cloudfront_url }}</code>
   </div>
   {% else %}
-  <div class="cf-badge" style="background:#b94a48;">
-    ⚠️ CLOUDFRONT_URL not set — check ASM or environment variables
+  <div class="cf-strip error">
+    <span class="dot"></span>
+    CLOUDFRONT_URL not set — check ASM or your .env
   </div>
   {% endif %}
 
-  <main>
+  <!-- Content sections -->
+  <main class="sections">
     {% for section in content.sections %}
-    <div class="card">
+    <div class="section">
 
-      {% if section.image_url %}
-        <img src="{{ section.image_url }}" alt="{{ section.heading }}" loading="lazy" />
-      {% endif %}
+      <!-- Media -->
+      <div class="media-block">
+        {% if section.image_url %}
+          <img src="{{ section.image_url }}" alt="{{ section.heading }}" loading="lazy" />
+        {% elif section.video_url %}
+          <video controls preload="metadata" playsinline>
+            <source src="{{ section.video_url }}" type="video/mp4" />
+          </video>
+        {% endif %}
+      </div>
 
-      {% if section.video_url %}
-        <!-- 
-          preload="metadata" enables chunked loading via HTTP Range requests.
-          The browser will fetch video in chunks instead of downloading the whole file.
-        -->
-        <video controls preload="metadata" playsinline>
-          <source src="{{ section.video_url }}" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      {% endif %}
-
-      {% if not section.image_url and not section.video_url %}
-        <div class="media-placeholder">No media configured</div>
-      {% endif %}
-
-      <div class="card-text">
+      <!-- Text -->
+      <div class="text-block">
+        <span class="section-num">0{{ loop.index }}</span>
+        <div class="divider"></div>
         <h2>{{ section.heading }}</h2>
         <p>{{ section.body }}</p>
       </div>
@@ -141,7 +256,9 @@
     {% endfor %}
   </main>
 
-  <footer>Built with Flask · Media via AWS CloudFront</footer>
+  <footer>
+    {{ content.title }} &nbsp;·&nbsp; Built with Flask &nbsp;·&nbsp; Media via AWS CloudFront
+  </footer>
 
 </body>
 </html>

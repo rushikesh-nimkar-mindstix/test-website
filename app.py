@@ -8,85 +8,66 @@ app = Flask(__name__)
 
 
 def load_secrets():
-    """
-    Load secrets from AWS Secrets Manager into environment variables.
-    Call this BEFORE anything else.
-    """
+    """Load secrets from AWS Secrets Manager into os.environ.
+    Falls back silently to local env vars (local dev / no IAM role)."""
     try:
-        # Use IAM role attached to EC2 (no access keys needed)
         client = boto3.client(
-            'secretsmanager',
-            region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+            "secretsmanager",
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         )
-        
-        secret_name = os.environ.get('SECRET_NAME', 'prod/myapp/env')
+        secret_name = os.environ.get("SECRET_NAME", "prod/horizon/env")
         response = client.get_secret_value(SecretId=secret_name)
-        secrets = json.loads(response['SecretString'])
-        
-        # Store all secrets in os.environ for easy access
-        for key, value in secrets.items():
+        for key, value in json.loads(response["SecretString"]).items():
             os.environ[key] = str(value)
-            
-        print("✅ Secrets loaded from ASM")
-        return True
-        
+        print("✅ Secrets loaded from AWS Secrets Manager")
     except Exception as e:
-        print(f"⚠️ Could not load secrets from ASM: {e}")
-        print("⚠️ Falling back to local environment variables")
-        return False
+        print(f"⚠️  ASM unavailable ({e}) — using local env vars")
 
 
-# Load secrets FIRST when module imports
+# Load secrets before anything reads env
 load_secrets()
 
-
-# Now read CloudFront URL from environment (set by ASM or fallback)
 CLOUDFRONT_URL = os.environ.get("CLOUDFRONT_URL", "").rstrip("/")
 
 
 def cf(path):
-    """Build a full CloudFront URL for any file path."""
-    if not path:
+    """Return a full CloudFront URL for a given object path."""
+    if not path or not CLOUDFRONT_URL:
         return None
     return f"{CLOUDFRONT_URL}/{path.lstrip('/')}"
 
 
 def fetch_content():
-    """
-    Fetch page_content.json from CloudFront.
-    Falls back to hardcoded content if CloudFront is not reachable.
-    """
+    """Fetch page_content.json via CloudFront. Falls back to defaults."""
     if CLOUDFRONT_URL:
         try:
             resp = requests.get(cf("page_content.json"), timeout=5)
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            print(f"⚠️ Could not fetch from CloudFront: {e}")
-            print("⚠️ Using fallback content")
+            print(f"⚠️  CloudFront fetch failed ({e}) — using fallback content")
 
-    # Fallback / local dev content
     return {
-        "title": "My Media Page",
-        "intro": "A simple page with images, text, and videos — all served from CloudFront.",
+        "title": "Horizon",
+        "tagline": "Places. Moments. Motion.",
         "sections": [
             {
-                "heading": "Mountains",
-                "body": "Crisp air, endless views, and the quiet you can only find above the treeline.",
-                "image": "images/mountains.jpg",
+                "heading": "Mountain",
+                "body": "Above the treeline, where the air thins and the world opens up.",
+                "image": "mountain.jpeg",
                 "video": None,
             },
             {
                 "heading": "Ocean",
-                "body": "Salt water, rhythm of the waves, and a horizon that goes on forever.",
-                "image": "images/ocean.jpg",
-                "video": "videos/ocean.mp4",
+                "body": "The rhythm of the waves never stops.",
+                "image": None,
+                "video": "ocean.mp4",
             },
             {
-                "heading": "City at Night",
-                "body": "Neon reflections, endless movement, and a million stories per block.",
+                "heading": "On the Road",
+                "body": "Windows down, no fixed destination.",
                 "image": None,
-                "video": "videos/city.mp4",
+                "video": "car.mp4",
             },
         ],
     }
@@ -95,26 +76,20 @@ def fetch_content():
 @app.route("/")
 def index():
     content = fetch_content()
-
-    # Resolve all paths to full CloudFront URLs
-    for section in content["sections"]:
-        section["image_url"] = cf(section.get("image")) if section.get("image") else None
-        section["video_url"] = cf(section.get("video")) if section.get("video") else None
-
-    return render_template(
-        "index.html",
-        content=content,
-        cloudfront_url=CLOUDFRONT_URL
-    )
+    for s in content["sections"]:
+        s["image_url"] = cf(s.get("image"))
+        s["video_url"] = cf(s.get("video"))
+    return render_template("index.html", content=content, cloudfront_url=CLOUDFRONT_URL)
 
 
 @app.route("/health")
 def health():
-    """Health check endpoint for ALB."""
     return {"status": "healthy", "cloudfront_configured": bool(CLOUDFRONT_URL)}, 200
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true",
+    )

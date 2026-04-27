@@ -1,24 +1,24 @@
 {
-  "title": "My Media Page",
-  "intro": "A simple page with images, text, and videos served from CloudFront.",
+  "title": "Horizon",
+  "tagline": "Places. Moments. Motion.",
   "sections": [
     {
-      "heading": "Mountains",
-      "body": "Crisp air, endless views, and the quiet you can only find above the treeline.",
-      "image": "images/mountain.jpeg",
+      "heading": "Mountain",
+      "body": "Above the treeline, where the air thins and the world opens up. These peaks remind you how small — and how free — you really are.",
+      "image": "mountain.jpeg",
       "video": null
     },
     {
       "heading": "Ocean",
-      "body": "Salt water, rhythm of the waves, and a horizon that goes on forever.",
+      "body": "The rhythm of the waves never stops. Every tide brings something new to the shore, and takes something with it when it leaves.",
       "image": null,
-      "video": "videos/ocean.mp4"
+      "video": "ocean.mp4"
     },
     {
-      "heading": "Car Adventures",
-      "body": "The thrill of the open road and the hum of the engine.",
+      "heading": "On the Road",
+      "body": "Windows down, no fixed destination. Some of the best moments happen between the places you meant to go.",
       "image": null,
-      "video": "videos/car.mp4"
+      "video": "car.mp4"
     }
   ]
 }
