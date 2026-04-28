@@ -235,14 +235,18 @@
 
       <!-- Media -->
       <div class="media-block">
-        {% if section.image_url %}
-          <img src="{{ section.image_url }}" alt="{{ section.heading }}" loading="lazy" />
-        {% elif section.video_url %}
-          <video controls preload="metadata" playsinline>
+    {% if section.image_url %}
+        <img src="{{ section.image_url }}" alt="{{ section.heading }}" loading="lazy" />
+    {% elif section.video_url %}
+        <video controls preload="metadata" playsinline>
             <source src="{{ section.video_url }}" type="video/mp4" />
-          </video>
-        {% endif %}
-      </div>
+        </video>
+    {% else %}
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:.9rem;">
+            No media configured
+        </div>
+    {% endif %}
+</div>
 
       <!-- Text -->
       <div class="text-block">

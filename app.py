@@ -8,8 +8,7 @@ app = Flask(__name__)
 
 
 def load_secrets():
-    """Load secrets from AWS Secrets Manager into os.environ.
-    Falls back silently to local env vars (local dev / no IAM role)."""
+    """Load secrets from AWS Secrets Manager into os.environ."""
     try:
         client = boto3.client(
             "secretsmanager",
@@ -27,7 +26,11 @@ def load_secrets():
 # Load secrets before anything reads env
 load_secrets()
 
-CLOUDFRONT_URL = os.environ.get("CLOUDFRONT_URL", "").rstrip("/")
+# Defensive: ensure https:// prefix
+raw_cf_url = os.environ.get("CLOUDFRONT_URL", "").rstrip("/")
+if raw_cf_url and not raw_cf_url.startswith("http"):
+    raw_cf_url = f"https://{raw_cf_url}"
+CLOUDFRONT_URL = raw_cf_url
 
 
 def cf(path):
