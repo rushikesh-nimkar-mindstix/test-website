@@ -3,12 +3,13 @@ import json
 import boto3
 import requests
 from flask import Flask, render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 
 def load_secrets():
-    """Load secrets from AWS Secrets Manager into os.environ."""
     try:
         client = boto3.client(
             "secretsmanager",
@@ -18,15 +19,12 @@ def load_secrets():
         response = client.get_secret_value(SecretId=secret_name)
         for key, value in json.loads(response["SecretString"]).items():
             os.environ[key] = str(value)
-        print("✅ Secrets loaded from AWS Secrets Manager")
-    except Exception as e:
-        print(f"⚠️  ASM unavailable ({e}) — using local env vars")
+    except Exception:
+        pass
 
 
-# Load secrets before anything reads env
 load_secrets()
 
-# Defensive: ensure https:// prefix
 raw_cf_url = os.environ.get("CLOUDFRONT_URL", "").rstrip("/")
 if raw_cf_url and not raw_cf_url.startswith("http"):
     raw_cf_url = f"https://{raw_cf_url}"
@@ -34,21 +32,19 @@ CLOUDFRONT_URL = raw_cf_url
 
 
 def cf(path):
-    """Return a full CloudFront URL for a given object path."""
     if not path or not CLOUDFRONT_URL:
         return None
     return f"{CLOUDFRONT_URL}/{path.lstrip('/')}"
 
 
 def fetch_content():
-    """Fetch page_content.json via CloudFront. Falls back to defaults."""
     if CLOUDFRONT_URL:
         try:
             resp = requests.get(cf("page_content.json"), timeout=5)
             resp.raise_for_status()
             return resp.json()
-        except Exception as e:
-            print(f"⚠️  CloudFront fetch failed ({e}) — using fallback content")
+        except Exception:
+            pass
 
     return {
         "title": "Horizon",
@@ -76,8 +72,9 @@ def fetch_content():
     }
 
 
-@app.route("/")
-def index():
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def index(path):
     content = fetch_content()
     for s in content["sections"]:
         s["image_url"] = cf(s.get("image"))
